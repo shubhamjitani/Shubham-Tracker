@@ -263,6 +263,96 @@ function DonutChart({ segments }) {
 }
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
+
+// ─── DASHBOARD PAGE (isolated so errors don't blank the whole app) ────────────
+function Dashboard({ savedDays, weightLog, latestW, wLost }) {
+  try {
+    const avgScore = savedDays.length ? Math.round(savedDays.reduce((a,d)=>a+(d.score||0),0)/savedDays.length) : null;
+    const bestScore = savedDays.length ? Math.max(...savedDays.map(d=>d.score||0)) : null;
+    const wPct = latestW && wLost > 0 ? ((START_WEIGHT-latestW)/START_WEIGHT*100).toFixed(1) : null;
+
+    const habitAvg = (ids) => {
+      if (!savedDays.length) return 0;
+      return Math.round(savedDays.reduce((a,d) => {
+        const checks = d.checks || {};
+        return a + ids.filter(id=>checks[id]).length / ids.length;
+      }, 0) / savedDays.length * 100);
+    };
+
+    const donutSegments = [
+      { label:'Morning', value: habitAvg(['c1','c2','c3','c4']), color: C.green },
+      { label:'Daytime', value: habitAvg(['c5','c6','c7','c8','c9','c10']), color: C.amber },
+      { label:'Evening', value: habitAvg(['c11','c12','c13','c14','c15']), color: C.purple },
+    ];
+
+    return <div>
+      <div style={{ fontSize:22, fontWeight:700, marginBottom:4 }}>Progress Dashboard</div>
+      <div style={{ fontSize:13, color:C.text3, marginBottom:20 }}>Your transformation — day by day</div>
+      <div style={statGrid}>
+        <StatCard label="Days logged" value={savedDays.length} sub="consistency is everything"/>
+        <StatCard label="Avg daily score" value={avgScore!==null?avgScore+'%':'—'} sub={avgScore!==null?(avgScore>=70?'On track':'Needs consistency'):'—'}/>
+        <StatCard label="Best score" value={bestScore!==null?bestScore+'%':'—'} sub="personal best"/>
+        <StatCard label="Weight lost" value={wLost>0?wLost:'—'} unit={wLost>0?'kg':''} sub={wPct?`${wPct}% of start weight`:'keep logging'}/>
+      </div>
+      <div style={{ ...card, marginBottom:16 }}>
+        <div style={{ fontSize:14, fontWeight:500, marginBottom:2 }}>Daily habit score</div>
+        <div style={{ fontSize:12, color:C.text3, marginBottom:12 }}>Green ≥80% · Amber ≥50% · Red below 50%</div>
+        {savedDays.length
+          ? <BarChart data={savedDays} label="Daily scores"/>
+          : <div style={{ textAlign:'center', padding:40, color:C.text3, fontSize:13 }}>Save your first day to see scores here.</div>}
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
+        <div style={card}>
+          <div style={{ fontSize:14, fontWeight:500, marginBottom:2 }}>Weight trend</div>
+          <div style={{ fontSize:12, color:C.text3, marginBottom:12 }}>Progress toward goal</div>
+          {weightLog.length>1
+            ? <LineChart data={weightLog.map(e=>({date:e.date,value:Number(e.weight)}))} label="Weight" yFormatter={v=>v+'kg'} minPad={2}/>
+            : <div style={{ textAlign:'center', padding:40, color:C.text3, fontSize:13 }}>Log 2+ weights to see trend.</div>}
+        </div>
+        <div style={card}>
+          <div style={{ fontSize:14, fontWeight:500, marginBottom:2 }}>Habit breakdown</div>
+          <div style={{ fontSize:12, color:C.text3, marginBottom:12 }}>Avg completion by time of day</div>
+          {savedDays.length
+            ? <DonutChart segments={donutSegments}/>
+            : <div style={{ textAlign:'center', padding:40, color:C.text3, fontSize:13 }}>Save a few days to see breakdown.</div>}
+        </div>
+      </div>
+      <div style={card}>
+        <div style={{ fontSize:14, fontWeight:500, marginBottom:12 }}>Daily log history</div>
+        {!savedDays.length
+          ? <div style={{ textAlign:'center', padding:40, color:C.text3, fontSize:13 }}>No days saved yet.</div>
+          : <div style={{ overflowX:'auto' }}>
+              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
+                <thead>
+                  <tr>{['Date','Score','Water','Steps','Habits','Meals','Notes'].map(h=>(
+                    <th key={h} style={{ textAlign:'left', fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', color:C.text3, fontWeight:500, padding:'7px 10px', borderBottom:`1px solid ${C.border}` }}>{h}</th>
+                  ))}</tr>
+                </thead>
+                <tbody>{[...savedDays].reverse().map(d=>{
+                  const sc = d.score||0;
+                  const bg = sc>=80?C.greenL:sc>=50?C.amberL:C.redL;
+                  const fc = sc>=80?C.greenD:sc>=50?C.amber:C.red;
+                  return <tr key={d.date}>
+                    <td style={{ padding:'9px 10px' }}>{fmtDate(d.date)}</td>
+                    <td style={{ padding:'9px 10px' }}><span style={{ fontSize:11, fontWeight:600, padding:'2px 9px', borderRadius:20, background:bg, color:fc, fontFamily:"'DM Mono',monospace" }}>{sc}%</span></td>
+                    <td style={{ padding:'9px 10px', fontFamily:"'DM Mono',monospace" }}>{((d.water||0)*0.25).toFixed(1)}L</td>
+                    <td style={{ padding:'9px 10px', fontFamily:"'DM Mono',monospace" }}>{((d.steps||0)/1000).toFixed(1)}k</td>
+                    <td style={{ padding:'9px 10px' }}>{d.habits||0}/15</td>
+                    <td style={{ padding:'9px 10px' }}>{d.meals||0}/5</td>
+                    <td style={{ padding:'9px 10px', color:C.text3, maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.notes||'—'}</td>
+                  </tr>;
+                })}</tbody>
+              </table>
+            </div>}
+      </div>
+    </div>;
+  } catch(err) {
+    return <div style={{ padding:40, textAlign:'center', color:C.text3, fontSize:13 }}>
+      Dashboard error: {err.message}. Try saving today's log first, then reload.
+    </div>;
+  }
+}
+
 export default function App() {
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -565,35 +655,12 @@ export default function App() {
       </div>}
 
       {/* ── DASHBOARD ── */}
-      {!dbLoading && page==='dashboard' && <div>
-        <div style={{ fontSize:22, fontWeight:700, marginBottom:4 }}>Progress Dashboard</div>
-        <div style={{ fontSize:13, color:C.text3, marginBottom:20 }}>Your transformation — day by day</div>
-        <div style={statGrid}>
-          <StatCard label="Days logged" value={savedDays.length} sub="consistency is everything"/>
-          <StatCard label="Avg daily score" value={savedDays.length?Math.round(savedDays.reduce((a,d)=>a+d.score,0)/savedDays.length)+'%':'—'} sub={savedDays.length?(Math.round(savedDays.reduce((a,d)=>a+d.score,0)/savedDays.length)>=70?'On track':'Needs consistency'):'—'}/>
-          <StatCard label="Best score" value={savedDays.length?Math.max(...savedDays.map(d=>d.score))+'%':'—'} sub="personal best"/>
-          <StatCard label="Weight lost" value={wLost>0?wLost:'—'} unit={wLost>0?'kg':''} sub={wLost>0?`${((START_WEIGHT-latestW)/START_WEIGHT*100).toFixed(1)}% of start weight`:'keep logging'}/>
-        </div>
-        <div style={{ ...card, marginBottom:16 }}>
-          <div style={{ fontSize:14, fontWeight:500, marginBottom:2 }}>Daily habit score</div>
-          <div style={{ fontSize:12, color:C.text3, marginBottom:12 }}>Green ≥80% · Amber ≥50% · Red below 50%</div>
-          {savedDays.length?<BarChart data={savedDays} label="Daily scores"/>:<div style={{ textAlign:'center', padding:40, color:C.text3, fontSize:13 }}>Save your first day to see scores here.</div>}
-        </div>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
-          <div style={card}><div style={{ fontSize:14, fontWeight:500, marginBottom:2 }}>Weight trend</div><div style={{ fontSize:12, color:C.text3, marginBottom:12 }}>Progress toward goal</div>{weightLog.length>1?<LineChart data={weightLog.map(e=>({date:e.date,value:e.weight}))} label="Weight" yFormatter={v=>v+'kg'} minPad={2}/>:<div style={{ textAlign:'center', padding:40, color:C.text3, fontSize:13 }}>Log 2+ weights to see trend.</div>}</div>
-          <div style={card}><div style={{ fontSize:14, fontWeight:500, marginBottom:2 }}>Habit breakdown</div><div style={{ fontSize:12, color:C.text3, marginBottom:12 }}>Avg completion by time of day</div>{savedDays.length?<DonutChart segments={[{label:'Morning',value:Math.round(savedDays.reduce((a,d)=>a+['c1','c2','c3','c4'].filter(id=>(d.checks||{})[id]).length/4,0)/savedDays.length*100),color:C.green},{label:'Daytime',value:Math.round(savedDays.reduce((a,d)=>a+['c5','c6','c7','c8','c9','c10'].filter(id=>(d.checks||{})[id]).length/6,0)/savedDays.length*100),color:C.amber},{label:'Evening',value:Math.round(savedDays.reduce((a,d)=>a+['c11','c12','c13','c14','c15'].filter(id=>(d.checks||{})[id]).length/5,0)/savedDays.length*100),color:C.purple}]}/>:<div style={{ textAlign:'center', padding:40, color:C.text3, fontSize:13 }}>Save a few days to see breakdown.</div>}</div>
-        </div>
-        <div style={card}>
-          <div style={{ fontSize:14, fontWeight:500, marginBottom:12 }}>Daily log history</div>
-          {!savedDays.length?<div style={{ textAlign:'center', padding:40, color:C.text3, fontSize:13 }}>No days saved yet.</div>:(
-            <div style={{ overflowX:'auto' }}><table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
-              <thead><tr>{['Date','Score','Water','Steps','Habits','Meals','Notes'].map(h=><th key={h} style={{ textAlign:'left', fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', color:C.text3, fontWeight:500, padding:'7px 10px', borderBottom:`1px solid ${C.border}` }}>{h}</th>)}</tr></thead>
-              <tbody>{[...savedDays].reverse().map(d=>{const sc=d.score||0;const bg=sc>=80?C.greenL:sc>=50?C.amberL:C.redL;const fc=sc>=80?C.greenD:sc>=50?C.amber:C.red;return <tr key={d.date}><td style={{ padding:'9px 10px' }}>{fmtDate(d.date)}</td><td style={{ padding:'9px 10px' }}><span style={{ fontSize:11, fontWeight:600, padding:'2px 9px', borderRadius:20, background:bg, color:fc, fontFamily:"'DM Mono',monospace" }}>{sc}%</span></td><td style={{ padding:'9px 10px', fontFamily:"'DM Mono',monospace" }}>{((d.water||0)*0.25).toFixed(1)}L</td><td style={{ padding:'9px 10px', fontFamily:"'DM Mono',monospace" }}>{((d.steps||0)/1000).toFixed(1)}k</td><td style={{ padding:'9px 10px' }}>{d.habits||0}/15</td><td style={{ padding:'9px 10px' }}>{d.meals||0}/5</td><td style={{ padding:'9px 10px', color:C.text3, maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.notes||'—'}</td></tr>;})}
-              </tbody>
-            </table></div>
-          )}
-        </div>
-      </div>}
+      {!dbLoading && page==='dashboard' && <Dashboard
+        savedDays={savedDays}
+        weightLog={weightLog}
+        latestW={latestW}
+        wLost={wLost}
+      />}
 
       {/* ── HEALTH ── */}
       {!dbLoading && page==='health' && <div>
