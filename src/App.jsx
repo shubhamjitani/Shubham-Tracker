@@ -7,7 +7,7 @@ Chart.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement
 // ─── SUPABASE CONFIG ──────────────────────────────────────────────────────────
 // Replace these two values after you create your Supabase project
 const SUPABASE_URL = "https://wbrgwhfoafxsxhfkozjf.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indicmd3aGZvYWZ4c3hoZmtvempmIiwicm9sZSI6ImFub24iLCJpYXQiOj";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indicmd3aGZvYWZ4c3hoZmtvempmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzcxODAsImV4cCI6MjA5MzU1MzE4MH0.xLbTHhCTtx9t1qAtYDfU2jZT6LbaNUKfE5MoYtjQBJo";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ─── STATIC DATA ──────────────────────────────────────────────────────────────
