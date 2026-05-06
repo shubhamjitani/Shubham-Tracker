@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend, Filler } from "chart.js";
 import { createClient } from "@supabase/supabase-js";
+
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend, Filler);
 
 // ─── SUPABASE CONFIG ──────────────────────────────────────────────────────────
 // Replace these two values after you create your Supabase project
 const SUPABASE_URL = "https://wbrgwhfoafxsxhfkozjf.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indicmd3aGZvYWZ4c3hoZmtvempmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzcxODAsImV4cCI6MjA5MzU1MzE4MH0.xLbTHhCTtx9t1qAtYDfU2jZT6LbaNUKfE5MoYtjQBJo";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indicmd3aGZvYWZ4c3hoZmtvempmIiwicm9sZSI6ImFub24iLCJpYXQiOj";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ─── STATIC DATA ──────────────────────────────────────────────────────────────
@@ -233,7 +236,7 @@ function LineChart({ data, label, color, yFormatter, minPad=2 }) {
   useEffect(()=>{
     if(!data?.length||!ref.current) return;
     if(chart.current){chart.current.destroy();chart.current=null;}
-    chart.current = new window.Chart(ref.current,{type:'line',data:{labels:data.map(d=>fmtDate(d.date)),datasets:[{data:data.map(d=>d.value),borderColor:color||C.green,backgroundColor:`${color||C.green}15`,pointBackgroundColor:color||C.green,pointRadius:4,tension:0.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:Math.min(...data.map(d=>d.value))-minPad,max:Math.max(...data.map(d=>d.value))+minPad,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},callback:yFormatter}},x:{grid:{display:false},ticks:{font:{size:11},maxTicksLimit:8}}}}});
+    chart.current = new Chart(ref.current,{type:'line',data:{labels:data.map(d=>fmtDate(d.date)),datasets:[{data:data.map(d=>d.value),borderColor:color||C.green,backgroundColor:`${color||C.green}15`,pointBackgroundColor:color||C.green,pointRadius:4,tension:0.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:Math.min(...data.map(d=>d.value))-minPad,max:Math.max(...data.map(d=>d.value))+minPad,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},callback:yFormatter}},x:{grid:{display:false},ticks:{font:{size:11},maxTicksLimit:8}}}}});
     return()=>{if(chart.current){chart.current.destroy();chart.current=null;}};
   },[data,color]);
   return <div style={{ height:200 }}><canvas ref={ref} role="img" aria-label={label}/></div>;
@@ -243,7 +246,7 @@ function BarChart({ data, label }) {
   useEffect(()=>{
     if(!data?.length||!ref.current) return;
     if(chart.current){chart.current.destroy();chart.current=null;}
-    chart.current = new window.Chart(ref.current,{type:'bar',data:{labels:data.map(d=>fmtDate(d.date)),datasets:[{data:data.map(d=>d.score),backgroundColor:data.map(d=>d.score>=80?'rgba(29,158,117,0.75)':d.score>=50?'rgba(186,117,23,0.7)':'rgba(163,45,45,0.6)'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},callback:v=>v+'%'}},x:{grid:{display:false},ticks:{font:{size:11},maxTicksLimit:14}}}}});
+    chart.current = new Chart(ref.current,{type:'bar',data:{labels:data.map(d=>fmtDate(d.date)),datasets:[{data:data.map(d=>d.score),backgroundColor:data.map(d=>d.score>=80?'rgba(29,158,117,0.75)':d.score>=50?'rgba(186,117,23,0.7)':'rgba(163,45,45,0.6)'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11},callback:v=>v+'%'}},x:{grid:{display:false},ticks:{font:{size:11},maxTicksLimit:14}}}}});
     return()=>{if(chart.current){chart.current.destroy();chart.current=null;}};
   },[data]);
   return <div style={{ height:200 }}><canvas ref={ref} role="img" aria-label={label}/></div>;
@@ -253,7 +256,7 @@ function DonutChart({ segments }) {
   useEffect(()=>{
     if(!ref.current) return;
     if(chart.current){chart.current.destroy();chart.current=null;}
-    chart.current = new window.Chart(ref.current,{type:'doughnut',data:{labels:segments.map(s=>s.label),datasets:[{data:segments.map(s=>s.value),backgroundColor:segments.map(s=>s.color),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:12}}}}});
+    chart.current = new Chart(ref.current,{type:'doughnut',data:{labels:segments.map(s=>s.label),datasets:[{data:segments.map(s=>s.value),backgroundColor:segments.map(s=>s.color),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:12}}}}});
     return()=>{if(chart.current){chart.current.destroy();chart.current=null;}};
   },[segments]);
   return <div style={{ height:200 }}><canvas ref={ref} role="img" aria-label="Habit breakdown donut"/></div>;
