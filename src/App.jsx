@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend, Filler } from "chart.js";
+import { Chart, registerables } from "chart.js";
 import { createClient } from "@supabase/supabase-js";
 
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend, Filler);
+Chart.register(...registerables);
 
 // ─── SUPABASE CONFIG ──────────────────────────────────────────────────────────
 // Replace these two values after you create your Supabase project
