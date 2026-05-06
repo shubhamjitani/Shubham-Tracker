@@ -6,7 +6,7 @@ Chart.register(...registerables);
 
 // ─── SUPABASE CONFIG ──────────────────────────────────────────────────────────
 // Replace these two values after you create your Supabase project
-const SUPABASE_URL = "https://wbrgwhfoafxsxhfkozjf.supabase.co";
+const SUPABASE_URL = "https://wbrgwhfoafxsxhfkozjf.supabase.co/rest/v1/";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indicmd3aGZvYWZ4c3hoZmtvempmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzcxODAsImV4cCI6MjA5MzU1MzE4MH0.xLbTHhCTtx9t1qAtYDfU2jZT6LbaNUKfE5MoYtjQBJo";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -374,6 +374,7 @@ export default function App() {
   const [savedDays, setSavedDays] = useState([]);
   const [habitTab, setHabitTab] = useState('morning');
   const [expandedMeal, setExpandedMeal] = useState(null);
+  const isMobile = useIsMobile();
   const [wInput, setWInput] = useState('');
   const [wNote, setWNote] = useState('');
   const [wDate, setWDate] = useState(todayKey());
@@ -491,7 +492,6 @@ export default function App() {
   if (authLoading) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', color:C.text3, fontSize:14, fontFamily:'system-ui' }}>Loading...</div>;
   if (!session) return <LoginScreen onLogin={()=>loadAllData()}/>;
 
-  const isMobile = useIsMobile();
   const score = calcScore(todayData);
   const dayIdx = startDate ? getDayIdx(startDate) : 0;
   const weekIdx = getWeekDayIdx();
