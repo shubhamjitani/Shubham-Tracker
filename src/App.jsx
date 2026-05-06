@@ -124,13 +124,24 @@ const C = {
   bg:'#FAFAF8', surface:'#FFFFFF', text:'#1a1a18', text2:'#5F5E5A', text3:'#888780',
 };
 
+// ─── RESPONSIVE HOOK ─────────────────────────────────────────────────────────
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+  return isMobile;
+}
+
 // ─── STYLE HELPERS ────────────────────────────────────────────────────────────
 const card = { background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:'16px 18px' };
-const statGrid = { display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:24 };
-const numBtn = { width:32, height:32, borderRadius:8, border:`1px solid ${C.borderS}`, background:C.grayL, cursor:'pointer', fontSize:20, display:'flex', alignItems:'center', justifyContent:'center', color:C.text, fontFamily:'inherit' };
-const btnPrimary = { background:C.green, color:'white', border:'none', borderRadius:10, padding:'10px 20px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' };
+const cardMobile = { background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:'14px 14px' };
+const numBtn = { width:40, height:40, borderRadius:10, border:`1px solid ${C.borderS}`, background:C.grayL, cursor:'pointer', fontSize:22, display:'flex', alignItems:'center', justifyContent:'center', color:C.text, fontFamily:'inherit' };
+const btnPrimary = { background:C.green, color:'white', border:'none', borderRadius:10, padding:'12px 20px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit', width:'100%' };
 const btnSecondary = { background:'none', border:`1px solid ${C.borderS}`, borderRadius:10, padding:'9px 16px', fontSize:13, color:C.text2, cursor:'pointer', fontFamily:'inherit' };
-const formInput = { border:`1px solid ${C.borderS}`, borderRadius:10, padding:'10px 13px', fontSize:14, fontFamily:'inherit', background:C.surface, color:C.text, outline:'none', width:'100%', boxSizing:'border-box' };
+const formInput = { border:`1px solid ${C.borderS}`, borderRadius:10, padding:'12px 13px', fontSize:16, fontFamily:'inherit', background:C.surface, color:C.text, outline:'none', width:'100%', boxSizing:'border-box' };
 const navItem = (active) => ({ display:'flex', alignItems:'center', gap:10, padding:'10px 20px', cursor:'pointer', fontSize:13, color:active?C.greenD:C.text2, borderLeft:active?`2px solid ${C.green}`:'2px solid transparent', background:active?C.greenL:'none', fontWeight:active?500:400 });
 const tab = (active) => ({ fontSize:13, padding:'7px 16px', borderRadius:7, cursor:'pointer', color:active?C.text:C.text2, border:'none', background:active?C.surface:'none', fontWeight:active?500:400, fontFamily:'inherit', boxShadow:active?'0 1px 3px rgba(0,0,0,0.08)':'none' });
 
@@ -142,7 +153,12 @@ function SecLabel({ color, children }) {
   return <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'0.07em', color:C.text3, fontWeight:500, marginBottom:10, display:'flex', alignItems:'center', gap:6 }}><span style={{ width:6, height:6, borderRadius:'50%', background:color||C.green, display:'inline-block' }}/>{children}</div>;
 }
 function StatCard({ label, value, unit, pct, sub }) {
-  return <div style={card}><div style={{ fontSize:11, color:C.text3, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:6 }}>{label}</div><div style={{ fontSize:26, fontWeight:700, fontFamily:"'DM Mono',monospace" }}>{value}<span style={{ fontSize:13, fontWeight:400, color:C.text3, marginLeft:2 }}>{unit}</span></div>{pct!==undefined&&<ProgBar pct={pct}/>}{sub&&<div style={{ fontSize:11, color:C.text3, marginTop:4 }}>{sub}</div>}</div>;
+  return <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:'12px 14px' }}>
+    <div style={{ fontSize:10, color:C.text3, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:4 }}>{label}</div>
+    <div style={{ fontSize:22, fontWeight:700, fontFamily:"'DM Mono',monospace", lineHeight:1.2 }}>{value}<span style={{ fontSize:12, fontWeight:400, color:C.text3, marginLeft:2 }}>{unit}</span></div>
+    {pct!==undefined&&<ProgBar pct={pct}/>}
+    {sub&&<div style={{ fontSize:10, color:C.text3, marginTop:3 }}>{sub}</div>}
+  </div>;
 }
 function ScoreRing({ score }) {
   const offset = 201 - 201*score/100;
@@ -288,7 +304,7 @@ function Dashboard({ savedDays, weightLog, latestW, wLost }) {
     return <div>
       <div style={{ fontSize:22, fontWeight:700, marginBottom:4 }}>Progress Dashboard</div>
       <div style={{ fontSize:13, color:C.text3, marginBottom:20 }}>Your transformation — day by day</div>
-      <div style={statGrid}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10, marginBottom:16 }}>
         <StatCard label="Days logged" value={savedDays.length} sub="consistency is everything"/>
         <StatCard label="Avg daily score" value={avgScore!==null?avgScore+'%':'—'} sub={avgScore!==null?(avgScore>=70?'On track':'Needs consistency'):'—'}/>
         <StatCard label="Best score" value={bestScore!==null?bestScore+'%':'—'} sub="personal best"/>
@@ -301,7 +317,7 @@ function Dashboard({ savedDays, weightLog, latestW, wLost }) {
           ? <BarChart data={savedDays} label="Daily scores"/>
           : <div style={{ textAlign:'center', padding:40, color:C.text3, fontSize:13 }}>Save your first day to see scores here.</div>}
       </div>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr', gap:12, marginBottom:12 }}>
         <div style={card}>
           <div style={{ fontSize:14, fontWeight:500, marginBottom:2 }}>Weight trend</div>
           <div style={{ fontSize:12, color:C.text3, marginBottom:12 }}>Progress toward goal</div>
@@ -487,15 +503,27 @@ export default function App() {
   const latestW = weightLog.length ? weightLog[weightLog.length-1].weight : null;
   const wLost = latestW ? (START_WEIGHT - latestW).toFixed(1) : null;
 
+  const isMobile = useIsMobile();
+
+  // Mobile bottom nav config
+  const NAV_ITEMS = [
+    {id:'today', icon:'◉', label:'Today'},
+    {id:'meals', icon:'◈', label:'Meals'},
+    {id:'supplements', icon:'◇', label:'Supps'},
+    {id:'weight', icon:'▲', label:'Weight'},
+    {id:'dashboard', icon:'▦', label:'Progress'},
+    {id:'health', icon:'◎', label:'Health'},
+  ];
+
   return <div style={{ display:'flex', minHeight:'100vh', fontFamily:"'DM Sans',system-ui,sans-serif", background:C.bg, color:C.text }}>
 
-    {/* SIDEBAR */}
-    <nav style={{ width:220, minHeight:'100vh', background:C.surface, borderRight:`1px solid ${C.border}`, padding:'24px 0', position:'fixed', top:0, left:0, display:'flex', flexDirection:'column', zIndex:100 }}>
+    {/* DESKTOP SIDEBAR — hidden on mobile */}
+    {!isMobile && <nav style={{ width:220, minHeight:'100vh', background:C.surface, borderRight:`1px solid ${C.border}`, padding:'24px 0', position:'fixed', top:0, left:0, display:'flex', flexDirection:'column', zIndex:100 }}>
       <div style={{ padding:'0 20px 20px', borderBottom:`1px solid ${C.border}`, marginBottom:16 }}>
         <div style={{ fontSize:15, fontWeight:600 }}>Shubham Jitani</div>
         <div style={{ fontSize:11, background:C.greenL, color:C.greenD, borderRadius:20, padding:'2px 9px', display:'inline-block', marginTop:4, fontWeight:500 }}>Phase I · Fatloss</div>
       </div>
-      {[['today','◉','Today'],['meals','◈','Meals & Recipes'],['supplements','◇','Supplements'],['weight','▲','Weight Log'],['dashboard','▦','Dashboard'],['health','◎','Health Focus']].map(([id,icon,label])=>(
+      {NAV_ITEMS.map(({id,icon,label})=>(
         <div key={id} style={navItem(page===id)} onClick={()=>setPage(id)}><span style={{ width:18, textAlign:'center' }}>{icon}</span>{label}</div>
       ))}
       <div style={{ marginTop:'auto', padding:'16px 20px', borderTop:`1px solid ${C.border}` }}>
@@ -506,21 +534,51 @@ export default function App() {
         </div>
         <button onClick={logout} style={{ ...btnSecondary, marginTop:10, width:'100%', fontSize:12 }}>Log out</button>
       </div>
-    </nav>
+    </nav>}
 
-    <main style={{ marginLeft:220, flex:1, padding:'28px 32px', maxWidth:'calc(100vw - 220px)' }}>
+    {/* MOBILE TOP BAR */}
+    {isMobile && <div style={{ position:'fixed', top:0, left:0, right:0, background:C.surface, borderBottom:`1px solid ${C.border}`, padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', zIndex:100 }}>
+      <div>
+        <div style={{ fontSize:15, fontWeight:600, lineHeight:1.2 }}>Shubham's Tracker</div>
+        <div style={{ fontSize:10, color:C.green, fontWeight:500 }}>Phase I · Fatloss · {WORKOUTS[dayIdx].day}</div>
+      </div>
+      <div style={{ textAlign:'right' }}>
+        <div style={{ fontSize:11, color:C.text3 }}>Lost so far</div>
+        <div style={{ fontSize:15, fontWeight:700, fontFamily:"'DM Mono',monospace", color:C.green }}>{wLost>0?`${wLost} kg`:'—'}</div>
+      </div>
+    </div>}
+
+    {/* MOBILE BOTTOM TAB BAR */}
+    {isMobile && <nav style={{ position:'fixed', bottom:0, left:0, right:0, background:C.surface, borderTop:`1px solid ${C.border}`, display:'flex', zIndex:100, paddingBottom:'env(safe-area-inset-bottom)' }}>
+      {NAV_ITEMS.map(({id,icon,label})=>(
+        <button key={id} onClick={()=>setPage(id)} style={{ flex:1, padding:'8px 2px 6px', border:'none', background:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:2, fontFamily:'inherit' }}>
+          <span style={{ fontSize:16, lineHeight:1 }}>{icon}</span>
+          <span style={{ fontSize:9, fontWeight:page===id?600:400, color:page===id?C.green:C.text3, letterSpacing:'0.02em' }}>{label}</span>
+          {page===id && <span style={{ width:16, height:2, background:C.green, borderRadius:1 }}/>}
+        </button>
+      ))}
+    </nav>}
+
+    <main style={{
+      marginLeft: isMobile ? 0 : 220,
+      flex:1,
+      padding: isMobile ? '70px 14px 80px' : '28px 32px',
+      maxWidth: isMobile ? '100vw' : 'calc(100vw - 220px)',
+      overflowX: 'hidden',
+    }}>
       {dbLoading && <div style={{ textAlign:'center', padding:40, color:C.text3 }}>Loading your data...</div>}
 
       {/* ── TODAY ── */}
       {!dbLoading && page==='today' && <div>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:24 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
           <div>
-            <div style={{ fontSize:22, fontWeight:700 }}>Today's Tracker</div>
-            <div style={{ fontSize:13, color:C.text3, marginTop:2 }}>{fmtDateFull(todayKey())} · {WORKOUTS[dayIdx].day}: {WORKOUTS[dayIdx].label}</div>
+            <div style={{ fontSize:isMobile?18:22, fontWeight:700 }}>Today's Tracker</div>
+            <div style={{ fontSize:12, color:C.text3, marginTop:2 }}>{isMobile ? fmtDate(todayKey()) : fmtDateFull(todayKey())} · {WORKOUTS[dayIdx].day}: {WORKOUTS[dayIdx].label}</div>
           </div>
+          {isMobile && <button onClick={logout} style={{ ...btnSecondary, fontSize:11, padding:'6px 10px' }}>Log out</button>}
         </div>
         <ScoreRing score={score}/>
-        <div style={statGrid}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10, marginBottom:16 }}>
           <StatCard label="Water" value={(todayData.water*0.25).toFixed(2).replace(/\.?0+$/,'')} unit="L" pct={todayData.water*250/3500*100}/>
           <StatCard label="Steps" value={(todayData.steps/1000).toFixed(1)} unit="k" pct={todayData.steps/8000*100}/>
           <StatCard label="Habits" value={Object.values(todayData.checks).filter(Boolean).length} unit="/15" pct={Object.values(todayData.checks).filter(Boolean).length/15*100}/>
@@ -541,7 +599,7 @@ export default function App() {
             <div><div style={{ fontSize:13, color:done?C.greenD:C.text }}>{h.text}</div><div style={{ fontSize:11, color:done?C.green:C.text3, marginTop:2 }}>{h.note}</div></div>
           </div>;
         })}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginTop:20 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginTop:16 }}>
           {[['water','Water intake','Target: 3.5L',`${todayData.water} glasses of 250ml`,-1,1],['steps','Steps today','Target: 8,000',`${todayData.steps.toLocaleString()} steps (±500)`,-500,500]].map(([type,title,target,sub,dec,inc])=>(
             <div key={type} style={{ ...card }}>
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12 }}><span style={{ fontSize:13, color:C.text2 }}>{title}</span><span style={{ fontSize:11, background:C.grayL, color:C.text3, borderRadius:20, padding:'2px 9px' }}>{target}</span></div>
@@ -628,7 +686,7 @@ export default function App() {
           <StatCard label="Days tracked" value={weightLog.length} sub="Weigh same time daily"/>
         </div>
         {weightLog.length>1 && <div style={{ ...card, marginBottom:20 }}><div style={{ fontSize:14, fontWeight:500, marginBottom:2 }}>Weight trend</div><div style={{ fontSize:12, color:C.text3, marginBottom:12 }}>Morning weigh-in — same time daily for accuracy</div><LineChart data={weightLog.map(e=>({date:e.date,value:e.weight}))} label="Weight trend" yFormatter={v=>v+'kg'} minPad={2}/></div>}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr', gap:16 }}>
           <div>
             <SecLabel color={C.green}>Log weight</SecLabel>
             <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -677,7 +735,7 @@ export default function App() {
         </div>
         <div style={{ marginBottom:24 }}>
           <SecLabel color={C.green}>Level 1 weekly workout split</SecLabel>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr', gap:8 }}>
             {WORKOUTS.map((w,i)=><div key={i} style={{ border:`1px solid ${i===dayIdx?C.greenM:C.border}`, borderRadius:10, padding:'12px 14px', background:i===dayIdx?C.greenL:C.surface }}>
               <div style={{ fontSize:12, fontWeight:600, color:i===dayIdx?C.greenD:C.text }}>{w.icon} {w.day} — {w.label} {i===dayIdx&&<span style={{ fontSize:10, background:C.green, color:'white', borderRadius:20, padding:'1px 7px', marginLeft:4 }}>TODAY</span>}</div>
               <div style={{ fontSize:11, color:i===dayIdx?C.green:C.text3, marginTop:3, lineHeight:1.6 }}>{w.exercises.slice(0,3).map(e=>e.name).join(' · ')}{w.exercises.length>3?'…':''}</div>
@@ -685,7 +743,7 @@ export default function App() {
           </div>
         </div>
         <SecLabel color={C.blue}>Food substitution quick reference</SecLabel>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr', gap:10 }}>
           {[['Protein — swap freely',['Paneer 100g','Tofu 120g','Soya nuggets 35g','Greek yogurt 120g','Whey 1 scoop','Tempeh 120g']],['Carbs — swap freely',['Oats 40g','Rice 40g','Bran atta 40g','Millets 40g','Brown pasta 40g','Sweet potato 180g','Potato 170g','Brown bread 2 slices']],['Fats — swap freely',['10 almonds','5 walnut halves','9 cashews','3 brazil nuts','40g avocado','5g ghee (measured)']]].map(([label,items])=>(
             <div key={label} style={{ background:C.grayL, borderRadius:10, padding:'13px 14px' }}>
               <div style={{ fontSize:12, fontWeight:600, marginBottom:8 }}>{label}</div>
