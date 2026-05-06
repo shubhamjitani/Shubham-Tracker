@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 // ─── SUPABASE CONFIG ──────────────────────────────────────────────────────────
 // Replace these two values after you create your Supabase project
-const SUPABASE_URL = "https://wbrgwhfoafxsxhfkozjf.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://wbrgwhfoafxsxhfkozjf.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indicmd3aGZvYWZ4c3hoZmtvempmIiwicm9sZSI6ImFub24iLCJpYXQiOj";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
